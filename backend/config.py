@@ -1,13 +1,15 @@
+import os
 class Config:
     ''' LLM配置 '''
-    LLM_API_URL = "http://localhost:1234/v1/chat/completions"
-    LLM_API_KEY = "lm-studio"
+    LLM_API_URL = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
+    LLM_API_KEY = os.getenv("DASHSCOPE_API_KEY")
+    LLM_MODEL = "qwen-plus"  # 新增LLM模型配置
     
     ''' 向量模型配置 '''
-    EMBEDDING_API_KEY = "lm-studio"
-    EMBEDDING_API_URL = "http://localhost:1234/v1/embeddings"
-    EMBEDDING_MODEL = "nomic-ai/nomic-embed-text-v1.5-GGUF"
-    EMBEDDING_DIMENSION = 768
+    EMBEDDING_API_KEY = os.getenv("DASHSCOPE_API_KEY")
+    EMBEDDING_API_URL = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-embeddings/embeddings"
+    EMBEDDING_MODEL = "text-embedding-v3"
+    EMBEDDING_DIMENSION = 1024  # 推荐使用更高维度
     
     ''' 
         TTS服务配置

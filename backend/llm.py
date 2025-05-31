@@ -30,22 +30,27 @@ class LLMService:
                     response = await client.post(
                         self.api_url,
                         json={
-                            "model": "claude-3-5-sonnet-20240620",
+                        "model": "qwen-plus",
+                        "input": {
                             "messages": [
-                                {
-                                    "role": "user", 
-                                    "content": message
-                                }
-                            ],
-                            "temperature": temperature,
+                                {"role": "user", "content": message}
+                            ]
                         },
+                        "parameters": {
+                            "temperature": temperature
+                        }
+                    },
                         headers={"Authorization": f"Bearer {self.api_key}"}
                     )
                     
                     if response.status_code != 200:
                         raise Exception(f"LLM API error: {response.status_code}")
                     
-                    raw_response = response.json()["choices"][0]["message"]["content"].strip()
+                    result = response.json()
+                    if "output" in result and "text" in result["output"]:
+                        raw_response = result["output"]["text"].strip()
+                    else:
+                        raise ValueError(f"Unexpected response structure: {result}")
                     print("raw_response:", raw_response)
                     if is_json:
                         return self._parse_json_response(raw_response)

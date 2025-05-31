@@ -27,23 +27,40 @@ const Live2DDisplay = forwardRef((props, ref) => {
     '泪眼': 'key17'
   }
 
+  // 新增：随机表情方法
+  const randomExpression = () => {
+    const expressions = Object.keys(EXPRESSIONS)
+    const randomIndex = Math.floor(Math.random() * expressions.length)
+    return expressions[randomIndex]
+  }
+
   // 暴露方法给父组件
   useImperativeHandle(ref, () => ({
-    // 使用中文参数的表情方法
     showExpression: (expression, active = true) => {
       if (modelRef.current) {
-        const expressionId = EXPRESSIONS[expression]
+        const expressionId = EXPRESSIONS[expression];
         if (expressionId) {
           modelRef.current.internalModel.coreModel.setParameterValueById(
             expressionId, 
             active ? 1 : 0
-          )
+          );
         } else {
-          console.warn(`未知的表情: ${expression}`)
+          console.warn(`未知的表情: ${expression}`);
         }
+
+        // 新增：设置定时器，在十秒后复位表情
+        setTimeout(() => {
+          if (modelRef.current && expressionId) {
+            modelRef.current.internalModel.coreModel.setParameterValueById(
+              expressionId, 
+              0 // 将表情参数值重置为 0
+            );
+            console.log(`表情 ${expression} 已复位`);
+          }
+        }, 10000); // 10秒后执行复位操作
       }
     },
-    
+
     // 新增：设置跟踪功能
     setTracking: (enabled) => {
       if (modelRef.current) {
@@ -84,9 +101,9 @@ const Live2DDisplay = forwardRef((props, ref) => {
       if (modelRef.current) return
       
       try {
-        //const model = await Live2DModel.from('/models/Hiyori/Hiyori.model3.json')
-        //const model = await Live2DModel.from('/models/Haru/Haru.model3.json')
-        const model = await Live2DModel.from('/models/PinkFox/PinkFox.model3.json')
+        const model = await Live2DModel.from('/models/Hiyori/Hiyori.model3.json')
+        // const model = await Live2DModel.from('/models/Haru/Haru.model3.json')
+        // const model = await Live2DModel.from('/models/PinkFox/PinkFox.model3.json')
 
         // 如果组件已经被卸载，不要继续处理
         if (isDestroyed || !appRef.current) return
