@@ -1,5 +1,5 @@
 # GEEK-AGENT-LIVE2D
-
+从项目https://github.com/mewamew/nana 魔改而来，删掉了原项目中的embedding做法，就让ai用一句话'user_info'记下用户信息，提升了项目的可靠性。
 
 ![聊天界面预览](image.png)
 
