@@ -29,6 +29,8 @@ function App() {
     if (!input.trim()) return
     setLoading(true)
     try {
+      // 开发时使用 localhost:8000/api/chat，部署时用162.105.13.189:5000/api/chat
+      // src/App.jsx (修改后的API调用部分)
       const response = await fetch('http://localhost:8000/api/chat', {
         method: 'POST',
         headers: {
@@ -38,7 +40,7 @@ function App() {
           message: input,
           session_id: 'default' 
         }),
-      })
+      });
       
       const data = await response.json()
       

@@ -54,5 +54,10 @@ backend/dist/
 backend/.env 
 backend/save/
 backend/__pycache__
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
 .codegpt

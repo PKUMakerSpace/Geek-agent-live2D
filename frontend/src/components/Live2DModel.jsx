@@ -71,86 +71,87 @@ const Live2DDisplay = forwardRef((props, ref) => {
     }
   }))
 
-  useLayoutEffect(() => {
-    // 确保清理之前的内容
+useLayoutEffect(() => {
+  // 确保清理之前的内容
+  if (appRef.current) {
+    appRef.current.destroy(true)
+    appRef.current = null
+  }
+  if (pixiContainerRef.current) {
+    while (pixiContainerRef.current.firstChild) {
+      pixiContainerRef.current.removeChild(pixiContainerRef.current.firstChild)
+    }
+  }
+
+  if (!pixiContainerRef.current) return
+
+  // 设置固定大小的画布 (600x800)
+  const app = new PIXI.Application({
+    width: 600,
+    height: 800,
+    backgroundColor: 0x000000,
+    antialias: true,
+  })
+  appRef.current = app
+  pixiContainerRef.current.appendChild(app.view)
+
+  let isDestroyed = false
+
+  ;(async function() {
+    if (modelRef.current) return
+    
+    try {
+      const model = await Live2DModel.from('/models/Hiyori/Hiyori.model3.json')
+      // const model = await Live2DModel.from('/models/LuoChu/洛厨.model3.json')
+
+      // 如果组件已经被卸载，不要继续处理
+      if (isDestroyed || !appRef.current) return
+      
+      console.log('Model loaded:', model)
+      modelRef.current = model
+      
+      // 设置模型的初始跟踪状态
+      model.internalModel.motionManager.settings.autoAddRandomMotion = true
+      model.autoInteract = false
+      model.draggable = false
+      
+      // 计算适合画布的缩放比例
+      const scale = Math.min(
+        app.view.width / model.width * 1,  // 调整比例以适应右下角位置
+        app.view.height / model.height * 1
+      );
+      model.scale.set(scale);
+      
+      // 将模型定位在画布的右下角区域（但不完全贴边）
+      model.x = app.view.width - (model.width * scale * 0.5) - 30;  // 右边距30像素
+      model.y = app.view.height - (model.height * scale * 0.5) - 30; // 下边距30像素
+      model.anchor.set(0.5, 0.5);
+
+      app.stage.addChild(model)
+
+      model.on('hit', (hitAreas) => {
+        console.log('Hit:', hitAreas)
+        model.motion('TapBody')
+      })
+    } catch (error) {
+      console.error('Error loading model:', error)
+    }
+  })()
+
+  return () => {
+    isDestroyed = true
+    if (modelRef.current) {
+      modelRef.current.destroy()
+      modelRef.current = null
+    }
     if (appRef.current) {
       appRef.current.destroy(true)
       appRef.current = null
     }
-    if (pixiContainerRef.current) {
-      while (pixiContainerRef.current.firstChild) {
-        pixiContainerRef.current.removeChild(pixiContainerRef.current.firstChild)
-      }
-    }
-
-    if (!pixiContainerRef.current) return
-
-    const app = new PIXI.Application({
-      width: window.innerWidth,
-      height: window.innerHeight,
-      backgroundColor: 0x000000,
-      resizeTo: window,
-      antialias: true,
-    })
-    appRef.current = app
-    pixiContainerRef.current.appendChild(app.view)
-
-    let isDestroyed = false
-
-    ;(async function() {
-      if (modelRef.current) return
-      
-      try {
-        const model = await Live2DModel.from('/models/Hiyori/Hiyori.model3.json')
-        // const model = await Live2DModel.from('/models/Haru/Haru.model3.json')
-        // const model = await Live2DModel.from('/models/PinkFox/PinkFox.model3.json')
-
-        // 如果组件已经被卸载，不要继续处理
-        if (isDestroyed || !appRef.current) return
-        
-        console.log('Model loaded:', model)
-        modelRef.current = model
-        
-        // 设置模型的初始跟踪状态
-        model.internalModel.motionManager.settings.autoAddRandomMotion = true
-        model.autoInteract = false  // 初始状态设置为不跟踪
-        model.draggable = false
-        
-        const scale = Math.min(
-          app.view.width / model.width * 1.8,
-          app.view.height / model.height * 1.8
-        )
-        model.scale.set(scale)
-        
-        model.x = app.view.width / 2
-        model.y = app.view.height * 0.9
-        model.anchor.set(0.5, 0.5)
-
-        app.stage.addChild(model)
-
-        model.on('hit', (hitAreas) => {
-          console.log('Hit:', hitAreas)
-          model.motion('TapBody')
-        })
-      } catch (error) {
-        console.error('Error loading model:', error)
-      }
-    })()
-
-    return () => {
-      isDestroyed = true
-      if (modelRef.current) {
-        modelRef.current.destroy()
-        modelRef.current = null
-      }
-      if (appRef.current) {
-        appRef.current.destroy(true)
-        appRef.current = null
-      }
-    }
-  }, [])
-
+  }
+}, [])
   return <div ref={pixiContainerRef} className="live2d-container"></div>
 })
-
+// 添加这行给组件命名
+Live2DDisplay.displayName = 'Live2DDisplay'
 export default Live2DDisplay 
